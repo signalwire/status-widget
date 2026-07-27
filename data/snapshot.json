@@ -1,0 +1,298 @@
+{
+ "generated_at": "2026-07-27T19:26:30Z",
+ "source": "https://signalwire.trust.pagerduty.com/posts/dashboard",
+ "page": {
+  "name": "SignalWire Status",
+  "status_page_id": "P37FJDY",
+  "headline": "Everything is running smoothly",
+  "columns": "2",
+  "logo_url": "https://d1jprqach4ypsh.cloudfront.net/image/7730baf3-bd48-456f-8308-f91cfb810c49.png",
+  "home_url": "https://signalwire.com/",
+  "home_text": "Return to SignalWire",
+  "uptime_days": "7",
+  "created_at": "2025-12-23T00:37:13Z"
+ },
+ "services": [
+  {
+   "id": "P2L7POY",
+   "business_service_id": "P7I8TS8",
+   "name": "APIs",
+   "description": "Programmatic interfaces that support application functionality and integrations by providing secure access to core services.",
+   "is_active": true
+  },
+  {
+   "id": "P1Y707U",
+   "business_service_id": "PCN9QIM",
+   "name": "SIP Connectivity",
+   "description": "The service that provides scalable, cloud-based SIP connections for routing voice calls between our systems and external phone networks.",
+   "is_active": true
+  },
+  {
+   "id": "PLQDPLG",
+   "business_service_id": "PMTB9L0",
+   "name": "WebRTC Connectivity",
+   "description": "Service responsible for real-time browser and app communication, enabling voice, video, and data connections between users.",
+   "is_active": true
+  },
+  {
+   "id": "PSGU9G1",
+   "business_service_id": "PUQ56S7",
+   "name": "Video and Conferencing",
+   "description": "Services that ensure video calls, meetings, and collaborative sessions are reliably connected and functional.",
+   "is_active": true
+  },
+  {
+   "id": "P21JMHT",
+   "business_service_id": "P826982",
+   "name": "Website",
+   "description": "Web portal for signing up, configuring and monitoring your SignalWire account.",
+   "is_active": true
+  },
+  {
+   "id": "P8GG1Z7",
+   "business_service_id": "P0ZZS0V",
+   "name": "External Carrier Network",
+   "description": "Third-party telephony providers and network infrastructure that handle call routing, SMS delivery, and connectivity between our systems and external phone networks.",
+   "is_active": true
+  },
+  {
+   "id": "P57V0JH",
+   "business_service_id": "PJVISNC",
+   "name": "SMS",
+   "description": "The services that ensures SMS messages and notifications are delivered reliably to users and external systems.",
+   "is_active": true
+  },
+  {
+   "id": "PKUT0UB",
+   "business_service_id": "PFJXRYP",
+   "name": "MMS",
+   "description": "The services that ensures MMS messages and notifications are delivered reliably to users and external systems.",
+   "is_active": true
+  },
+  {
+   "id": "PP7693B",
+   "business_service_id": "PXMT74X",
+   "name": "AI",
+   "description": "Services responsible for delivering AI-powered functionality, including recommendations, predictions, and automated insights.",
+   "is_active": true
+  },
+  {
+   "id": "PLHTPYF",
+   "business_service_id": "POUWU4Y",
+   "name": "Support and Documentation",
+   "description": "",
+   "is_active": true
+  }
+ ],
+ "post_enums": [
+  {
+   "status_page_id": "P37FJDY",
+   "name": "investigating",
+   "description": "investigating",
+   "rank": 0,
+   "post_type": "incident",
+   "id": "P330YPP",
+   "layout_settings": {
+    "key": "incident/status/investigating"
+   },
+   "post_enum_type": "status",
+   "is_featured": true
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "detected",
+   "description": "detected",
+   "rank": 1,
+   "post_type": "incident",
+   "id": "PLM9YZW",
+   "layout_settings": {
+    "key": "incident/status/detected"
+   },
+   "post_enum_type": "status",
+   "is_featured": true
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "resolved",
+   "description": "resolved",
+   "rank": 2,
+   "post_type": "incident",
+   "id": "PIPLXK6",
+   "layout_settings": {
+    "key": "incident/status/resolved"
+   },
+   "post_enum_type": "status",
+   "is_featured": false
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "all good",
+   "description": "all good",
+   "rank": 0,
+   "post_type": "incident",
+   "id": "PEDAX7G",
+   "layout_settings": {
+    "key": "incident/severity/all_good"
+   },
+   "post_enum_type": "severity",
+   "is_featured": false
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "minor",
+   "description": "minor",
+   "rank": 1,
+   "post_type": "incident",
+   "id": "PB4PWVT",
+   "layout_settings": {
+    "key": "incident/severity/minor"
+   },
+   "post_enum_type": "severity",
+   "is_featured": true
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "major",
+   "description": "major",
+   "rank": 2,
+   "post_type": "incident",
+   "id": "PXV1VG3",
+   "layout_settings": {
+    "key": "incident/severity/major"
+   },
+   "post_enum_type": "severity",
+   "is_featured": true
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "operational",
+   "description": "operational",
+   "rank": 0,
+   "post_type": "incident",
+   "id": "PTIDV3D",
+   "layout_settings": {
+    "key": "incident/impacts/operational"
+   },
+   "post_enum_type": "impacts",
+   "is_featured": false
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "partial outage",
+   "description": "partial outage",
+   "rank": 1,
+   "post_type": "incident",
+   "id": "PQ9SURQ",
+   "layout_settings": {
+    "key": "incident/impacts/partial_outage"
+   },
+   "post_enum_type": "impacts",
+   "is_featured": true
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "outage",
+   "description": "outage",
+   "rank": 2,
+   "post_type": "incident",
+   "id": "P9A4TC0",
+   "layout_settings": {
+    "key": "incident/impacts/outage"
+   },
+   "post_enum_type": "impacts",
+   "is_featured": true
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "scheduled",
+   "description": "scheduled",
+   "rank": 0,
+   "post_type": "maintenance",
+   "id": "P60GSMA",
+   "layout_settings": {
+    "key": "maintenance/status/scheduled"
+   },
+   "post_enum_type": "status",
+   "is_featured": true
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "in progress",
+   "description": "in progress",
+   "rank": 1,
+   "post_type": "maintenance",
+   "id": "P2RVSNN",
+   "layout_settings": {
+    "key": "maintenance/status/in_progress"
+   },
+   "post_enum_type": "status",
+   "is_featured": true
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "completed",
+   "description": "completed",
+   "rank": 2,
+   "post_type": "maintenance",
+   "id": "PLNESXU",
+   "layout_settings": {
+    "key": "maintenance/status/completed"
+   },
+   "post_enum_type": "status",
+   "is_featured": false
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "all good",
+   "description": "all good",
+   "rank": 0,
+   "post_type": "maintenance",
+   "id": "PHBTRI4",
+   "layout_settings": {
+    "key": "maintenance/severity/all_good"
+   },
+   "post_enum_type": "severity",
+   "is_featured": false
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "maintenance",
+   "description": "maintenance",
+   "rank": 1,
+   "post_type": "maintenance",
+   "id": "PE25R5E",
+   "layout_settings": {
+    "key": "maintenance/severity/maintenance"
+   },
+   "post_enum_type": "severity",
+   "is_featured": true
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "operational",
+   "description": "operational",
+   "rank": 0,
+   "post_type": "maintenance",
+   "id": "PASHQTR",
+   "layout_settings": {
+    "key": "maintenance/impacts/operational"
+   },
+   "post_enum_type": "impacts",
+   "is_featured": false
+  },
+  {
+   "status_page_id": "P37FJDY",
+   "name": "maintenance",
+   "description": "maintenance",
+   "rank": 1,
+   "post_type": "maintenance",
+   "id": "PWGWPE1",
+   "layout_settings": {
+    "key": "maintenance/impacts/maintenance"
+   },
+   "post_enum_type": "impacts",
+   "is_featured": true
+  }
+ ],
+ "posts": []
+}

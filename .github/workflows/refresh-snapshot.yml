@@ -1,0 +1,120 @@
+name: Refresh status snapshot
+
+# Keeps data/snapshot.json current. The PagerDuty status API is public but sends
+# no CORS headers, so a browser cannot read it directly. This job mirrors it to a
+# static file that CAN be served cross-origin.
+#
+# The commit path needs no secrets and publishes to raw.githubusercontent.com,
+# which sends `Access-Control-Allow-Origin: *` with a 300 second cache.
+#
+# The S3 step is the lower-latency option: same file on cdn.signalwire.com with a
+# 60 second TTL. It authenticates with OIDC rather than stored keys, so this
+# public repo holds no long-lived AWS credentials. To enable it, set these
+# repository variables (Settings > Secrets and variables > Actions > Variables):
+#
+#   PUBLISH_TO_CDN = true
+#   AWS_ROLE_ARN   = arn:aws:iam::<account>:role/<role>
+#   AWS_REGION     = us-east-1
+#   CDN_BUCKET     = <bucket behind cdn.signalwire.com>
+#
+# The role's trust policy must restrict sub to this repo and branch, and its
+# permission policy needs only s3:PutObject on the single snapshot key.
+# No secrets required.
+
+on:
+  schedule:
+    # Five minutes is the practical floor for GitHub cron, and scheduled runs can
+    # be delayed under load. Actions minutes are free and unmetered on public
+    # repositories, so the only real cost here is the lag, not the compute.
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/refresh.mjs'
+      - '.github/workflows/refresh-snapshot.yml'
+
+concurrency:
+  group: refresh-snapshot
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # commit the snapshot
+  id-token: write   # mint the OIDC token AWS trusts
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Fails the job on any upstream error rather than writing a partial file.
+      - name: Build snapshot
+        run: node scripts/refresh.mjs --out data/snapshot.json
+
+      # Publish before the commit step, not after. That step reverts the file
+      # when only the timestamp moved, so publishing afterwards would upload the
+      # reverted copy and the CDN's generated_at would only advance hourly.
+      # S3 gets the fresh file every run; git keeps the tidy history.
+      # Non-fatal on purpose. The CDN is the faster of two delivery paths, not
+      # the only one. If AWS is misconfigured or down, the snapshot must still
+      # get committed and served from raw.githubusercontent.
+      - name: Configure AWS credentials
+        if: vars.PUBLISH_TO_CDN == 'true'
+        continue-on-error: true
+        id: aws
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Publish to CDN
+        if: vars.PUBLISH_TO_CDN == 'true' && steps.aws.outcome == 'success'
+        continue-on-error: true
+        env:
+          BUCKET: ${{ vars.CDN_BUCKET }}
+        run: |
+          aws s3 cp data/snapshot.json "s3://$BUCKET/status/snapshot.json" \
+            --content-type application/json \
+            --cache-control "public, max-age=60, s-maxage=60"
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- data/snapshot.json; then
+            echo "no change at all"
+            exit 0
+          fi
+
+          # generated_at moves every run, so committing on any diff would mean a
+          # commit every five minutes. Committing only on payload change is not
+          # right either: generated_at would freeze, the widget would report a
+          # stale "last checked", and a dead job would look identical to a quiet
+          # one. So commit on payload change, plus an hourly heartbeat that
+          # proves the job is alive.
+          PAYLOAD_CHANGED=$(git diff -- data/snapshot.json \
+            | grep -E '^[+-]' | grep -v generated_at | grep -vE '^(\+\+\+|---)' || true)
+
+          PREV=$(git show HEAD:data/snapshot.json \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).generated_at))")
+          AGE_MIN=$(node -e "console.log(Math.floor((Date.now()-Date.parse(process.argv[1]))/60000))" "$PREV")
+
+          if [ -n "$PAYLOAD_CHANGED" ]; then
+            MSG="chore: refresh status snapshot"
+          elif [ "$AGE_MIN" -ge 60 ]; then
+            MSG="chore: status snapshot heartbeat (${AGE_MIN}m)"
+          else
+            echo "no status change, last commit ${AGE_MIN}m ago, skipping"
+            git checkout -- data/snapshot.json
+            exit 0
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/snapshot.json
+          git commit -m "$MSG"
+          git push
+

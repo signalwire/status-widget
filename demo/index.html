@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@signalwire/status-widget</title>
+<meta name="description" content="Embeddable platform status widget. A footer indicator or a full dashboard, with no dependencies and no runtime backend.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%2322c55e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Lexend:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="swstatus.css">
+<style>
+/* ===================================================== SignalWire tokens */
+
+:root {
+  --sw-blue: #044EF4;
+  --sw-fuchsia: #F72A72;
+  --sw-purple: #601BE6;
+  --sw-turquoise: #40E0D0;
+
+  --bg-page: #0e0e18;
+  --bg-surface: #181a28;
+  --bg-raised: #222436;
+
+  --fg-default: #f0f0f4;
+  --fg-secondary: #e8e8ec;
+  --fg-muted: #a0a0aa;
+  --fg-subtle: #73737e;
+
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  --font-heading: 'Instrument Sans', sans-serif;
+  --font-body: 'Lexend', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--fg-default);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  color: var(--fg-default);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+a { color: var(--sw-turquoise); text-underline-offset: 3px; }
+a:hover { color: var(--sw-fuchsia); }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+.eyebrow {
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sw-fuchsia);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: var(--sw-fuchsia);
+}
+
+/* ================================================================== hero */
+
+.hero {
+  position: relative;
+  padding: 88px 0 64px;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: -40% 0 auto 50%;
+  width: 900px;
+  height: 700px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(closest-side, rgba(96, 27, 230, 0.20), transparent 70%),
+    radial-gradient(closest-side, rgba(4, 78, 244, 0.16), transparent 70%);
+  background-position: 30% 40%, 70% 55%;
+  background-repeat: no-repeat;
+  background-size: 60% 70%, 55% 65%;
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+.hero > * { position: relative; }
+
+.hero h1 {
+  font-size: clamp(2.25rem, 5.5vw, 3.75rem);
+  font-weight: 700;
+  max-width: 16ch;
+}
+
+.hero h1 .accent { color: var(--sw-fuchsia); }
+
+.hero .lede {
+  max-width: 62ch;
+  margin: 22px 0 0;
+  font-size: 19px;
+  color: var(--fg-secondary);
+  font-weight: 300;
+}
+
+/* mock site footer holding the live indicator */
+
+.mock {
+  margin-top: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+.mock__label {
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-code);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.mock__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 20px 24px;
+}
+
+.mock__links {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--fg-muted);
+}
+
+.mock__links span { cursor: default; }
+
+/* ============================================================== sections */
+
+section { padding: 72px 0; border-top: 1px solid var(--border); }
+
+.sec-head { margin-bottom: 34px; max-width: 68ch; }
+
+.sec-head h2 { font-size: clamp(1.5rem, 3vw, 2.125rem); font-weight: 700; }
+.sec-head p { margin: 12px 0 0; color: var(--fg-muted); font-size: 17px; font-weight: 300; }
+
+.split { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 880px) { .split { grid-template-columns: 1fr; } }
+
+/* controls */
+
+.controls { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 20px; }
+
+.ctrl-group h3 {
+  font-family: var(--font-code);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  margin: 0 0 10px;
+}
+
+.ctrl-list { display: flex; flex-direction: column; gap: 3px; }
+
+.ctrl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--fg-muted);
+  font-family: var(--font-code);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.ctrl:hover { background: var(--bg-raised); color: var(--fg-default); }
+
+.ctrl[aria-pressed="true"] {
+  background: var(--bg-raised);
+  border-color: var(--sw-blue);
+  color: var(--fg-default);
+}
+
+.ctrl:focus-visible { outline: 2px solid var(--sw-blue); outline-offset: 2px; }
+
+/* stage */
+
+.stage {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+.stage__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-code);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.stage__bar b { color: var(--fg-muted); font-weight: 500; }
+
+.stage__body { padding: 26px; transition: background 0.25s ease; }
+.stage__body.on-dark { background: var(--bg-page); }
+.stage__body.on-light { background: #FAFBFC; }
+.stage__body.on-custom { background: #05070a; }
+
+/* a deliberately non-brand skin, to show the contract holds */
+.skin-custom {
+  --swst-font: var(--font-code);
+  --swst-font-heading: var(--font-code);
+  --swst-fg: #c7d4e2;
+  --swst-muted: #5b7085;
+  --swst-card-bg: #080c12;
+  --swst-card-raised: #0d131b;
+  --swst-border: #1d2a38;
+  --swst-radius: 2px;
+  --swst-gap: 5px;
+  --swst-pad: 13px;
+  --swst-ok: #46d9a0;
+  --swst-warn: #e0b341;
+  --swst-down: #ff6b81;
+  --swst-maint: #57b6ff;
+}
+.skin-custom .swst__service-name::before { content: "› "; color: var(--swst-muted); }
+.skin-custom .swst__headline,
+.skin-custom .swst__service-name { text-transform: uppercase; letter-spacing: 0.06em; }
+.skin-custom .swst__pill { border-radius: 0; }
+
+/* ================================================================= cards */
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 18px; }
+
+.card {
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.card h3 { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+.card p { margin: 0 0 10px; color: var(--fg-muted); font-size: 15px; font-weight: 300; }
+.card p:last-child { margin-bottom: 0; }
+
+.card--lead { background: var(--bg-raised); box-shadow: 0 0 24px rgba(247, 42, 114, 0.14); }
+
+code, .ic {
+  font-family: var(--font-code);
+  font-size: 13.5px;
+  color: var(--fg-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+pre {
+  margin: 0;
+  padding: 20px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  background: #1e1e1f;
+  color: #d4d4d8;
+  font-family: var(--font-code);
+  font-size: 13.5px;
+  line-height: 1.75;
+  overflow-x: auto;
+}
+
+pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+
+.tok-c { color: #898995; }
+.tok-k { color: #6e9eff; }
+.tok-s { color: #40E0D0; }
+.tok-p { color: #ffffff; }
+.tok-n { color: #ff6da0; }
+
+/* tables */
+
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+th {
+  text-align: left;
+  padding: 10px 14px;
+  font-family: var(--font-code);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  border-bottom: 2px solid var(--sw-fuchsia);
+}
+td { padding: 11px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); color: var(--fg-secondary); font-weight: 300; }
+tr:hover td { background: rgba(255, 255, 255, 0.03); }
+td:first-child { font-family: var(--font-code); font-size: 13px; white-space: nowrap; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-code);
+  font-size: 12.5px;
+  color: var(--fg-secondary);
+}
+
+.chip i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+/* callout */
+
+.callout {
+  padding: 18px 22px;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--sw-blue);
+  border-radius: 10px;
+  background: var(--bg-raised);
+  color: var(--fg-secondary);
+  font-size: 15px;
+  font-weight: 300;
+}
+
+.callout--warn { border-left-color: #FFD700; }
+.callout strong { color: var(--fg-default); font-weight: 600; }
+
+footer.page {
+  padding: 40px 0 72px;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-code);
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ================================================================ hero -->
+  <header class="hero">
+    <p class="eyebrow">@signalwire/status-widget</p>
+    <h1>Platform status, <span class="accent">anywhere</span> on the site.</h1>
+    <p class="lede">
+      One dependency-free script reads the PagerDuty status feed and renders it two ways:
+      a quiet dot and label for the site footer, or a full service dashboard. No framework,
+      no build step, and nothing to keep running at request time.
+    </p>
+
+    <div class="mock">
+      <div class="mock__label">signalwire.com footer, community column</div>
+      <div class="mock__bar">
+        <div class="mock__links">
+          <span>Discord</span><span>FreeSWITCH</span><span>GitHub</span>
+          <span id="footer-slot"></span>
+        </div>
+        <div class="mock__links"><span>&copy; SignalWire</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================= indicator -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">01 / Footer indicator</p>
+      <h2>The state a visitor actually needs</h2>
+      <p>
+        Four states and one failure state. A single degraded service does not read as a full
+        outage, and a failed fetch renders neutral rather than a false green.
+      </p>
+    </div>
+
+    <div class="split">
+      <div class="controls">
+        <div class="ctrl-group">
+          <h3>Simulate</h3>
+          <div class="ctrl-list" id="ind-states"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="stage">
+          <div class="stage__bar"><b id="ind-label">live data</b></div>
+          <div class="stage__body on-dark">
+            <div id="ind-demo" style="display:flex;flex-direction:column;gap:16px"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px">
+          <table>
+            <tr><th>Upstream severity</th><th>Indicator</th><th>Copy</th></tr>
+            <tr><td>all good</td><td><span class="chip"><i style="background:#22c55e"></i>green</span></td><td>All systems operational</td></tr>
+            <tr><td>minor</td><td><span class="chip"><i style="background:#FFD700"></i>gold</span></td><td>Some systems degraded</td></tr>
+            <tr><td>major</td><td><span class="chip"><i style="background:#ef4444"></i>red</span></td><td>Active incident</td></tr>
+            <tr><td>maintenance</td><td><span class="chip"><i style="background:#044EF4"></i>blue</span></td><td>Scheduled maintenance</td></tr>
+            <tr><td>fetch failed</td><td><span class="chip"><i style="background:#a0a0aa"></i>grey</span></td><td>System status unreachable</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= dashboard -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">02 / Full dashboard</p>
+      <h2>Same script, same markup, any skin</h2>
+      <p>
+        The widget ships semantic markup and stable class names. Colour, type and spacing come
+        from custom properties, so a host page restyles it without forking anything.
+      </p>
+    </div>
+
+    <div class="split">
+      <div class="controls">
+        <div class="ctrl-group">
+          <h3>Theme</h3>
+          <div class="ctrl-list" id="skins"></div>
+        </div>
+        <div class="ctrl-group">
+          <h3>Simulate</h3>
+          <div class="ctrl-list" id="states"></div>
+        </div>
+        <div class="ctrl-group">
+          <h3>Columns</h3>
+          <div class="ctrl-list" id="cols"></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage__bar"><b id="stage-skin">dark</b> / <span id="stage-state">live data</span></div>
+        <div class="stage__body on-dark" id="stage">
+          <div id="live"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ install -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">03 / Install</p>
+      <h2>Three ways in</h2>
+      <p>Published to npm and mirrored on the SignalWire CDN, the same path the call widget uses.</p>
+    </div>
+
+    <div class="grid">
+      <div>
+        <pre><code><span class="tok-c">&lt;!-- CDN, no build step --&gt;</span>
+<span class="tok-k">&lt;link</span> <span class="tok-p">rel</span>=<span class="tok-s">"stylesheet"</span>
+  <span class="tok-p">href</span>=<span class="tok-s">"https://cdn.signalwire.com/@signalwire/
+    status-widget/dist/swstatus.css"</span><span class="tok-k">&gt;</span>
+<span class="tok-k">&lt;script </span><span class="tok-p">src</span>=<span class="tok-s">"https://cdn.signalwire.com/
+  @signalwire/status-widget/dist/swstatus.js"</span><span class="tok-k">&gt;&lt;/script&gt;</span>
+
+<span class="tok-k">&lt;sw-status</span>
+  <span class="tok-p">variant</span>=<span class="tok-s">"footer"</span>
+  <span class="tok-p">src</span>=<span class="tok-s">"https://cdn.signalwire.com/status/snapshot.json"</span>
+  <span class="tok-p">refresh</span>=<span class="tok-s">"60"</span><span class="tok-k">&gt;&lt;/sw-status&gt;</span></code></pre>
+      </div>
+      <div>
+        <pre><code><span class="tok-c">// npm, for the Framer code component</span>
+<span class="tok-c">// npm i @signalwire/status-widget</span>
+<span class="tok-k">import</span> SWStatus <span class="tok-k">from</span> <span class="tok-s">'@signalwire/status-widget'</span>;
+<span class="tok-k">import</span> <span class="tok-s">'@signalwire/status-widget/swstatus.css'</span>;
+
+SWStatus.<span class="tok-p">mount</span>(ref.current, {
+  variant: <span class="tok-s">'footer'</span>,
+  source: <span class="tok-s">CDN + '/status/snapshot.json'</span>,
+  refresh: <span class="tok-n">60000</span>
+});</code></pre>
+      </div>
+    </div>
+
+    <div style="margin-top:18px">
+      <pre><code><span class="tok-c">// headless, if you want to render it yourself</span>
+<span class="tok-k">const</span> state = SWStatus.<span class="tok-p">derive</span>(<span class="tok-k">await</span> SWStatus.<span class="tok-p">load</span>(url));
+<span class="tok-c">// { overall, headline, services[], active[], upcoming[], history[] }</span></code></pre>
+    </div>
+  </section>
+
+  <!-- =========================================================== architecture -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">04 / How the data arrives</p>
+      <h2>No token, no receiver, one static file</h2>
+      <p>
+        The status page API is public and needs no credentials. The only real obstacle is CORS,
+        and that is solved by mirroring rather than by building a service.
+      </p>
+    </div>
+
+    <div class="grid">
+      <div class="card card--lead">
+        <h3>What is actually blocked</h3>
+        <p>
+          The four endpoints below answer unauthenticated requests. No API token is involved,
+          so there is no credential to keep out of client-side code.
+        </p>
+        <p>
+          What they do not send is <code>Access-Control-Allow-Origin</code>. A preflight returns
+          only <code>Allow: GET,HEAD</code>. That means a browser on signalwire.com cannot read
+          them directly, no matter how the fetch is written.
+        </p>
+      </div>
+      <div class="card">
+        <h3>The mirror</h3>
+        <p>
+          A scheduled job pulls the four endpoints and writes one merged
+          <code>snapshot.json</code>. That file goes to static hosting that already sends
+          <code>Access-Control-Allow-Origin: *</code>.
+        </p>
+        <p>
+          <code>cdn.signalwire.com</code> already does, on every response. So does
+          raw.githubusercontent.com, which the bundled GitHub Action targets with no secrets.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Endpoints merged</h3>
+        <table style="font-size:13.5px">
+          <tr><td>/api/data</td><td>Page config, descriptions</td></tr>
+          <tr><td>/api/services</td><td>Service list</td></tr>
+          <tr><td>/api/post_enums</td><td>Status vocabulary</td></tr>
+          <tr><td>/api/posts</td><td>Incidents, maintenance</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:22px">
+      <strong>Why health is derived.</strong> Services carry no status field upstream. A service is
+      operational unless an unresolved post lists it under <code>impacts</code>. The widget applies
+      the worst active impact per service, then rolls those up to an overall state, matching the
+      rule the PagerDuty dashboard itself uses.
+    </div>
+
+    <div class="callout callout--warn" style="margin-top:14px">
+      <strong>Freshness is a scheduling question.</strong> The snapshot is only as current as the
+      job that writes it. GitHub cron runs at a five minute floor and can be delayed. For
+      incident-grade freshness, run the refresh on a shorter external schedule and keep the CDN
+      cache TTL at 60 seconds.
+    </div>
+  </section>
+
+  <footer class="page">
+    <div class="wrap" style="padding:0">
+      @signalwire/status-widget v0.1.0 &middot; data mirrored from
+      <a href="https://signalwire.trust.pagerduty.com/posts/dashboard" target="_blank" rel="noopener">signalwire.trust.pagerduty.com</a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="swstatus.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // Prefer the snapshot in the repo: raw.githubusercontent.com sends
+  // Access-Control-Allow-Origin: *, so it works from any origin and stays
+  // current between deploys. It only resolves once the repo is public, so fall
+  // back to the copy deploy-demo.mjs drops alongside the page.
+  var CANDIDATES = [
+    'https://raw.githubusercontent.com/signalwire/status-widget/main/data/snapshot.json',
+    './data/snapshot.json'
+  ];
+  var SOURCE = CANDIDATES[CANDIDATES.length - 1];
+  var real = null;
+  var ready = [];
+
+  /* ------------------------------------------------ scenario construction
+     Live data is all green, so the demo synthesises posts using the real
+     enum ids from the snapshot. Same shape the upstream API returns. */
+
+  function enumId(snap, postType, enumType, name) {
+    var hit = (snap.post_enums || []).filter(function (e) {
+      return e.post_type === postType && e.post_enum_type === enumType &&
+             String(e.name).toLowerCase() === name;
+    })[0];
+    return hit ? hit.id : null;
+  }
+
+  function svc(snap, name) {
+    return (snap.services || []).filter(function (s) { return s.name === name; })[0] ||
+           snap.services[0];
+  }
+
+  function iso(minutesAgo) { return new Date(Date.now() - minutesAgo * 60000).toISOString(); }
+
+  function impact(snap, name, level, type) {
+    var s = svc(snap, name);
+    return {
+      service: { id: s.id, name: s.name, display_name: s.name },
+      severity_id: enumId(snap, type || 'incident', 'impacts', level)
+    };
+  }
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  var SCENARIOS = {
+    live: { label: 'live data', build: function (s) { return s; } },
+
+    partial: {
+      label: 'some degraded',
+      build: function (snap) {
+        var s = clone(snap);
+        var impacts = [impact(s, 'SMS', 'partial outage'), impact(s, 'MMS', 'partial outage')];
+        var latest = {
+          reported_at: iso(12),
+          status_id: enumId(s, 'incident', 'status', 'investigating'),
+          severity_id: enumId(s, 'incident', 'severity', 'minor'),
+          message: 'Elevated SMS delivery latency on a subset of routes. A degraded upstream ' +
+                   'carrier has been identified and affected traffic is being rerouted.',
+          impacts: impacts
+        };
+        s.posts = [{
+          id: 'DEMO1', title: 'Elevated SMS delivery latency', post_type: 'incident',
+          updates: [{
+            reported_at: iso(38),
+            status_id: enumId(s, 'incident', 'status', 'detected'),
+            severity_id: enumId(s, 'incident', 'severity', 'minor'),
+            message: 'Monitoring detected a rise in message queue depth.',
+            impacts: impacts
+          }, latest],
+          latest_update: latest
+        }];
+        return s;
+      }
+    },
+
+    outage: {
+      label: 'active incident',
+      build: function (snap) {
+        var s = clone(snap);
+        var latest = {
+          reported_at: iso(4),
+          status_id: enumId(s, 'incident', 'status', 'detected'),
+          severity_id: enumId(s, 'incident', 'severity', 'major'),
+          message: 'SIP registration is failing in us-east. Engineering is engaged and failover ' +
+                   'to the secondary region is in progress.',
+          impacts: [impact(s, 'SIP Connectivity', 'outage'),
+                    impact(s, 'External Carrier Network', 'outage'),
+                    impact(s, 'APIs', 'partial outage')]
+        };
+        s.posts = [{
+          id: 'DEMO2', title: 'SIP registration failures in us-east', post_type: 'incident',
+          updates: [latest], latest_update: latest
+        }];
+        return s;
+      }
+    },
+
+    maintenance: {
+      label: 'maintenance',
+      build: function (snap) {
+        var s = clone(snap);
+        var latest = {
+          reported_at: iso(20),
+          status_id: enumId(s, 'maintenance', 'status', 'in progress'),
+          severity_id: enumId(s, 'maintenance', 'severity', 'maintenance'),
+          message: 'Rolling upgrade of the media server fleet. Brief reconnects are expected.',
+          impacts: [impact(s, 'Video and Conferencing', 'maintenance', 'maintenance')]
+        };
+        s.posts = [{
+          id: 'DEMO3', title: 'Media server rolling upgrade', post_type: 'maintenance',
+          starts_at: iso(20), ends_at: iso(-100),
+          updates: [latest], latest_update: latest
+        }];
+        return s;
+      }
+    },
+
+    resolved: {
+      label: 'recent history',
+      build: function (snap) {
+        var s = clone(snap);
+        var impacts = [impact(s, 'APIs', 'partial outage')];
+        var first = {
+          reported_at: iso(220),
+          status_id: enumId(s, 'incident', 'status', 'investigating'),
+          severity_id: enumId(s, 'incident', 'severity', 'minor'),
+          message: 'Increased error rates on the REST API.', impacts: impacts
+        };
+        var last = {
+          reported_at: iso(160),
+          status_id: enumId(s, 'incident', 'status', 'resolved'),
+          severity_id: enumId(s, 'incident', 'severity', 'all good'),
+          message: 'A configuration push was rolled back and error rates returned to baseline.',
+          impacts: impacts
+        };
+        s.posts = [{
+          id: 'DEMO4', title: 'Increased API error rates', post_type: 'incident',
+          updates: [first, last], latest_update: last,
+          postmortem: { message: 'A configuration change bypassed staged rollout. Deploy tooling ' +
+                                 'now enforces canary gating for this service.' }
+        }];
+        return s;
+      }
+    }
+  };
+
+  /* ------------------------------------------------------------- widgets */
+
+  var live = document.getElementById('live');
+  var stage = document.getElementById('stage');
+  var footerWidget, widget;
+
+  function mountWidgets(src) {
+    SOURCE = src;
+    footerWidget = SWStatus.mount('#footer-slot', {
+      source: src, refresh: 60000, variant: 'footer'
+    });
+    widget = SWStatus.mount('#live', {
+      source: src,
+      refresh: 60000,
+      columns: 2,
+      onUpdate: function (state, api) {
+        if (!real && api.snapshot) {
+          real = api.snapshot;
+          ready.forEach(function (fn) { fn(); });
+          ready = [];
+        }
+      }
+    });
+  }
+
+  /* Use the first candidate that actually resolves. The repo copy wins when it
+     is reachable; the bundled copy keeps the demo working when it is not. */
+  (function resolveSource(i) {
+    if (i >= CANDIDATES.length) { mountWidgets(CANDIDATES[0]); return; }
+    SWStatus.load(CANDIDATES[i])
+      .then(function () { mountWidgets(CANDIDATES[i]); })
+      .catch(function () { resolveSource(i + 1); });
+  })(0);
+
+  /* Four indicator specimens, one per state, driven by the same code path. */
+  var indDemo = document.getElementById('ind-demo');
+  var indWidgets = [];
+
+  function buildIndicatorRow() {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:14px';
+    var slot = document.createElement('span');
+    row.appendChild(slot);
+    indDemo.appendChild(row);
+    return slot;
+  }
+
+  function renderIndicators(scenarioKey) {
+    indDemo.innerHTML = '';
+    indWidgets.forEach(function (w) { w.destroy(); });
+    indWidgets = [];
+    if (!real) return;
+
+    indWidgets.push(SWStatus.mount(buildIndicatorRow(), {
+      variant: 'footer',
+      data: SCENARIOS[scenarioKey].build(real)
+    }));
+
+    // Always show the unreachable state alongside so the failure copy is visible.
+    // Pointing at a missing file exercises the real error path rather than faking it.
+    indWidgets.push(SWStatus.mount(buildIndicatorRow(), {
+      variant: 'footer',
+      source: './__unreachable__.json',
+      onError: function () {}   // expected here, keep the console clean
+    }));
+  }
+
+  /* ------------------------------------------------------------ controls */
+
+  function buildControls(box, items, initial, onPick) {
+    var btns = {};
+    Object.keys(items).forEach(function (key) {
+      var b = document.createElement('button');
+      b.className = 'ctrl';
+      b.type = 'button';
+      b.textContent = items[key];
+      b.setAttribute('aria-pressed', String(key === initial));
+      b.addEventListener('click', function () {
+        Object.keys(btns).forEach(function (k) {
+          btns[k].setAttribute('aria-pressed', String(k === key));
+        });
+        onPick(key);
+      });
+      btns[key] = b;
+      box.appendChild(b);
+    });
+    return btns;
+  }
+
+  // indicator simulator
+  var indLabels = {};
+  Object.keys(SCENARIOS).forEach(function (k) { indLabels[k] = SCENARIOS[k].label; });
+
+  buildControls(document.getElementById('ind-states'), indLabels, 'live', function (key) {
+    document.getElementById('ind-label').textContent = SCENARIOS[key].label;
+    renderIndicators(key);
+  });
+
+  // dashboard simulator
+  buildControls(document.getElementById('states'), indLabels, 'live', function (key) {
+    if (!real) return;
+    document.getElementById('stage-state').textContent = SCENARIOS[key].label;
+    widget.setData(SCENARIOS[key].build(real));
+  });
+
+  // themes
+  var SKINS = { dark: 'SignalWire dark', light: 'SignalWire light', custom: 'Custom skin' };
+
+  buildControls(document.getElementById('skins'), SKINS, 'dark', function (key) {
+    live.classList.remove('swst--light', 'skin-custom');
+    stage.classList.remove('on-dark', 'on-light', 'on-custom');
+    if (key === 'light') { live.classList.add('swst--light'); stage.classList.add('on-light'); }
+    else if (key === 'custom') { live.classList.add('skin-custom'); stage.classList.add('on-custom'); }
+    else { stage.classList.add('on-dark'); }
+    document.getElementById('stage-skin').textContent = SKINS[key].toLowerCase();
+  });
+
+  // columns
+  buildControls(document.getElementById('cols'), { 1: '1 column', 2: '2 columns', 3: '3 columns' },
+    '2', function (n) { live.style.setProperty('--swst-columns', n); });
+
+  // The indicator row needs the real snapshot before it can build scenarios.
+  ready.push(function () { renderIndicators('live'); });
+})();
+</script>
+
+</body>
+</html>

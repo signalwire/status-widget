@@ -1,0 +1,458 @@
+/*!
+ * swstatus.css — default theme for swstatus.js
+ *
+ * Built on SignalWire DTCG tokens, dark first. Everything is driven by custom
+ * properties declared on `.swst` / `.swst-ind`, so a host page can reskin the
+ * widget without touching this file. Drop it entirely and write your own rules
+ * against the markup contract below if you prefer.
+ *
+ *   .swst[data-status]              root, carries overall status
+ *     .swst__banner[data-status]
+ *     .swst__services > .swst__service[data-status] > .swst__pill[data-status]
+ *     .swst__section--active|maintenance|upcoming|history
+ *       .swst__post[data-type][data-post-status]
+ *     .swst__empty  .swst__footer
+ *
+ *   .swst-ind[data-status]          compact footer indicator
+ *     .swst-ind__dot  .swst-ind__label
+ *
+ *   data-status: operational | partial-outage | outage | maintenance | unknown
+ *   State classes on root: .is-loading, .is-error
+ *
+ * Colour note: status hues come from the SignalWire `status` component tokens
+ * (success, warning, error, info). Labels stay neutral. Colour lives in the
+ * dot or the fill, never in text that has to be read.
+ */
+
+.swst,
+.swst-ind {
+  /* type */
+  --swst-font: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  --swst-font-heading: 'Instrument Sans', var(--swst-font);
+  --swst-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --swst-size: 15px;
+  --swst-size-sm: 13.5px;
+  --swst-size-xs: 12px;
+
+  /* surface (SignalWire dark theme) */
+  --swst-fg: #f0f0f4;
+  --swst-muted: #a0a0aa;
+  --swst-card-bg: #181a28;
+  --swst-card-raised: #222436;
+  --swst-border: rgba(255, 255, 255, 0.12);
+  --swst-radius: 10px;
+  --swst-gap: 10px;
+  --swst-pad: 16px;
+  --swst-columns: 2;
+
+  /* status hues */
+  --swst-ok: #22c55e;
+  --swst-warn: #FFD700;
+  --swst-down: #ef4444;
+  --swst-maint: #044EF4;
+  --swst-unknown: #a0a0aa;
+
+  --swst-tint: 14%;
+}
+
+/* Resolve one accent per status. Children read --swst-accent. */
+.swst [data-status="operational"],
+.swst-ind[data-status="operational"]     { --swst-accent: var(--swst-ok); }
+.swst [data-status="partial-outage"],
+.swst-ind[data-status="partial-outage"]  { --swst-accent: var(--swst-warn); }
+.swst [data-status="outage"],
+.swst-ind[data-status="outage"]          { --swst-accent: var(--swst-down); }
+.swst [data-status="maintenance"],
+.swst-ind[data-status="maintenance"]     { --swst-accent: var(--swst-maint); }
+.swst [data-status="unknown"],
+.swst-ind[data-status="unknown"]         { --swst-accent: var(--swst-unknown); }
+
+/* ============================================================== indicator
+   The footer variant. Small enough to sit in a nav or footer row. */
+
+.swst-ind {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--swst-font);
+  font-size: var(--swst-size-sm);
+  line-height: 1.4;
+  color: var(--swst-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.swst-ind:hover { color: var(--swst-fg); }
+
+.swst-ind:focus-visible {
+  outline: 2px solid var(--swst-maint);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.swst-ind__dot {
+  position: relative;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--swst-accent, var(--swst-unknown));
+}
+
+/* A quiet pulse while everything is healthy. Anything worse should not
+   look decorative, so the halo only runs on the operational state. */
+.swst-ind[data-status="operational"] .swst-ind__dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: swst-halo 2.8s ease-out infinite;
+}
+
+@keyframes swst-halo {
+  0%   { opacity: 0.55; transform: scale(1); }
+  70%  { opacity: 0;    transform: scale(2.6); }
+  100% { opacity: 0;    transform: scale(2.6); }
+}
+
+.swst-ind__label { white-space: nowrap; }
+
+/* ============================================================== dashboard */
+
+.swst {
+  font-family: var(--swst-font);
+  font-size: var(--swst-size);
+  line-height: 1.6;
+  color: var(--swst-fg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--swst-gap);
+  -webkit-font-smoothing: antialiased;
+}
+
+.swst *,
+.swst *::before,
+.swst *::after { box-sizing: border-box; }
+
+/* ---------------------------------------------------------------- banner */
+
+.swst__banner {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: var(--swst-pad);
+  border: 1px solid var(--swst-border);
+  border-radius: var(--swst-radius);
+  background: var(--swst-card-raised);
+}
+
+.swst__banner-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 600;
+  background: var(--swst-accent, var(--swst-unknown));
+}
+
+/* Gold is bright; dark glyphs read better on it. */
+.swst__banner[data-status="partial-outage"] .swst__banner-icon { color: #0a0a12; }
+
+.swst__banner-body { min-width: 0; }
+
+.swst__headline {
+  margin: 0;
+  font-family: var(--swst-font-heading);
+  font-size: calc(var(--swst-size) * 1.2);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--swst-fg);
+}
+
+.swst__meta {
+  margin: 2px 0 0;
+  font-size: var(--swst-size-sm);
+  color: var(--swst-muted);
+}
+
+/* -------------------------------------------------------------- services */
+
+.swst__services {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--swst-columns), minmax(0, 1fr));
+  gap: var(--swst-gap);
+}
+
+.swst__service {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: var(--swst-pad);
+  border: 1px solid var(--swst-border);
+  border-radius: var(--swst-radius);
+  background: var(--swst-card-bg);
+  transition: background 0.2s ease;
+}
+
+.swst__service:hover { background: var(--swst-card-raised); }
+
+.swst__service-body { min-width: 0; }
+
+.swst__service-name {
+  margin: 0;
+  font-family: var(--swst-font-heading);
+  font-size: var(--swst-size);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.swst__service-desc {
+  margin: 4px 0 0;
+  font-size: var(--swst-size-sm);
+  color: var(--swst-muted);
+  max-width: 60ch;
+}
+
+/* ----------------------------------------------------------------- pills */
+
+.swst__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 3px 10px 3px 8px;
+  border-radius: 100px;
+  font-family: var(--swst-font-mono);
+  font-size: var(--swst-size-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--swst-fg);
+  background: var(--swst-card-raised);
+  border: 1px solid var(--swst-border);
+}
+
+.swst__pill-icon {
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+  color: var(--swst-accent, var(--swst-unknown));
+}
+
+.swst__pill-icon svg { width: 100%; height: 100%; }
+
+/* Anything not operational earns a tinted fill so it reads at a glance. */
+.swst__pill:not([data-status="operational"]) {
+  background: color-mix(in srgb, var(--swst-accent) var(--swst-tint), var(--swst-card-raised));
+  border-color: color-mix(in srgb, var(--swst-accent) 35%, transparent);
+}
+
+/* ----------------------------------------------------------------- posts */
+
+.swst__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--swst-gap);
+}
+
+.swst__section-title {
+  margin: 8px 0 0;
+  font-family: var(--swst-font-mono);
+  font-size: var(--swst-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #F72A72;
+}
+
+.swst__post {
+  padding: var(--swst-pad);
+  border: 1px solid var(--swst-border);
+  border-radius: var(--swst-radius);
+  background: var(--swst-card-bg);
+}
+
+.swst__section--active .swst__post,
+.swst__section--maintenance .swst__post {
+  background: var(--swst-card-raised);
+}
+
+.swst__post-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.swst__post-title {
+  margin: 0;
+  font-family: var(--swst-font-heading);
+  font-size: var(--swst-size);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.swst__badge {
+  flex: none;
+  padding: 2px 9px;
+  border-radius: 100px;
+  font-family: var(--swst-font-mono);
+  font-size: var(--swst-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--swst-muted);
+  background: var(--swst-card-raised);
+  border: 1px solid var(--swst-border);
+}
+
+.swst__post-meta {
+  margin: 6px 0 0;
+  font-size: var(--swst-size-sm);
+  color: var(--swst-muted);
+}
+
+.swst__updates {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0 0 0 17px;
+  border-left: 1px solid var(--swst-border);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.swst__update { position: relative; }
+
+.swst__update::before {
+  content: "";
+  position: absolute;
+  left: -21px;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--swst-muted);
+}
+
+.swst__update:first-child::before { background: #F72A72; }
+
+.swst__update-head {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-family: var(--swst-font-mono);
+  font-size: var(--swst-size-xs);
+}
+
+.swst__update-status {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  color: var(--swst-fg);
+}
+
+.swst__update-time { color: var(--swst-muted); }
+
+.swst__update-msg {
+  margin: 4px 0 0;
+  font-size: var(--swst-size-sm);
+  color: var(--swst-fg);
+  max-width: 68ch;
+}
+
+.swst__postmortem {
+  margin-top: 15px;
+  padding-top: 13px;
+  border-top: 1px solid var(--swst-border);
+}
+
+.swst__postmortem h4 {
+  margin: 0 0 5px;
+  font-family: var(--swst-font-mono);
+  font-size: var(--swst-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #F72A72;
+}
+
+.swst__postmortem p {
+  margin: 0;
+  font-size: var(--swst-size-sm);
+  max-width: 68ch;
+}
+
+/* ------------------------------------------------------- empty / footer */
+
+.swst__empty {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: var(--swst-pad);
+  border: 1px solid var(--swst-border);
+  border-radius: var(--swst-radius);
+  font-size: var(--swst-size-sm);
+  color: var(--swst-muted);
+}
+
+.swst__empty-icon { display: inline-flex; }
+
+.swst__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+  font-family: var(--swst-font-mono);
+  font-size: var(--swst-size-xs);
+  color: var(--swst-muted);
+}
+
+.swst__source { color: #40E0D0; text-underline-offset: 3px; }
+.swst__source:hover { color: #F72A72; }
+
+/* ---------------------------------------------------------------- states */
+
+.swst.is-loading { opacity: 0.65; }
+
+.swst.is-loading .swst__banner-icon { animation: swst-pulse 1.2s ease-in-out infinite; }
+
+@keyframes swst-pulse { 50% { opacity: 0.35; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .swst *, .swst-ind * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 640px) {
+  .swst__services { grid-template-columns: 1fr; }
+  .swst__service { flex-direction: column; align-items: flex-start; gap: 9px; }
+}
+
+/* ----------------------------------------------------------- light theme
+   Opt in by adding .swst--light (or set the variables yourself). */
+
+.swst--light,
+.swst-ind--light {
+  --swst-fg: #1A1A18;
+  --swst-muted: #737371;
+  --swst-card-bg: #F3F4F6;
+  --swst-card-raised: #E8EAF0;
+  --swst-border: rgba(0, 0, 0, 0.1);
+  --swst-ok: #16a34a;
+  --swst-warn: #a16207;
+  --swst-down: #dc2626;
+  --swst-maint: #044EF4;
+  --swst-unknown: #737371;
+}
+
+.swst--light .swst__banner[data-status="partial-outage"] .swst__banner-icon { color: #fff; }

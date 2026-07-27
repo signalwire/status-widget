@@ -1,0 +1,59 @@
+{
+  "name": "@signalwire/status-widget",
+  "version": "0.2.0",
+  "description": "Embeddable platform status widget. Renders SignalWire's PagerDuty status feed as a full dashboard or a compact footer indicator, with no dependencies and no runtime backend.",
+  "license": "MIT",
+  "homepage": "https://github.com/signalwire/status-widget#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/signalwire/status-widget.git"
+  },
+  "bugs": {
+    "url": "https://github.com/signalwire/status-widget/issues"
+  },
+  "keywords": [
+    "signalwire",
+    "status",
+    "statuspage",
+    "pagerduty",
+    "widget",
+    "uptime"
+  ],
+  "main": "./dist/swstatus.js",
+  "module": "./dist/swstatus.mjs",
+  "unpkg": "./dist/swstatus.js",
+  "jsdelivr": "./dist/swstatus.js",
+  "exports": {
+    ".": {
+      "import": "./dist/swstatus.mjs",
+      "require": "./dist/swstatus.js",
+      "default": "./dist/swstatus.js"
+    },
+    "./swstatus.css": "./dist/swstatus.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "scripts/refresh.mjs",
+    "README.md"
+  ],
+  "sideEffects": [
+    "./dist/swstatus.js",
+    "./dist/swstatus.mjs",
+    "*.css"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "refresh": "node scripts/refresh.mjs --out data/snapshot.json",
+    "demo": "npm run build && npm run refresh && node scripts/deploy-demo.mjs --out build",
+    "serve": "npm run demo && npx --yes serve build",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

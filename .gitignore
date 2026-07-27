@@ -1,0 +1,33 @@
+# Deny by default. Nothing enters this repo unless it is listed below.
+# The rule: if someone installing the package does not need it, it does not
+# ship. Runbooks, setup scripts, internal docs and diagnostics stay local.
+/*
+
+# The widget itself
+!/src
+!/package.json
+!/README.md
+!/LICENSE
+!/.gitignore
+
+# The data the widget reads
+!/data
+
+# The demo published to Pages
+!/demo
+
+# CI
+!/.github
+
+# Only the scripts the package or CI actually runs
+!/scripts
+/scripts/*
+!/scripts/build.mjs
+!/scripts/refresh.mjs
+!/scripts/deploy-demo.mjs
+
+# Never, under any circumstances
+/dist
+/node_modules
+/build
+*.log
