@@ -66,14 +66,13 @@ jobs:
       - name: Configure AWS credentials
         if: vars.PUBLISH_TO_CDN == 'true'
         continue-on-error: true
-        id: aws
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Publish to CDN
-        if: ${{ vars.PUBLISH_TO_CDN == 'true' && steps.aws.outcome == 'success' }}
+        if: vars.PUBLISH_TO_CDN == 'true'
         continue-on-error: true
         env:
           BUCKET: ${{ vars.CDN_BUCKET }}
