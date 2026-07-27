@@ -85,9 +85,11 @@ jobs:
             --cache-control "public, max-age=60, s-maxage=60"
 
       - name: Commit if changed
+        id: commit
         run: |
           if git diff --quiet -- data/snapshot.json; then
             echo "no change at all"
+            echo "committed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -111,6 +113,7 @@ jobs:
           else
             echo "no status change, last commit ${AGE_MIN}m ago, skipping"
             git checkout -- data/snapshot.json
+            echo "committed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -119,4 +122,18 @@ jobs:
           git add data/snapshot.json
           git commit -m "$MSG"
           git push
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      # signalwire.com's CSP allows cdn.jsdelivr.net in connect-src but not
+      # raw.githubusercontent.com, so the footer reads the snapshot through
+      # jsDelivr. jsDelivr caches a branch path for 12 hours, which would be
+      # useless for status, so purge it the moment the file changes.
+      - name: Purge jsDelivr
+        if: steps.commit.outputs.committed == 'true'
+        continue-on-error: true
+        run: |
+          curl -sS --max-time 30 \
+            "https://purge.jsdelivr.net/gh/${{ github.repository }}@main/data/snapshot.json" \
+            | head -c 400
+          echo
 

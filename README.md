@@ -9,7 +9,7 @@ framework, no build step, and nothing running at request time.
 ```
 
 **Live demo:** https://signalwire.github.io/status-widget/
-**Live snapshot:** https://raw.githubusercontent.com/signalwire/status-widget/main/data/snapshot.json
+**Live snapshot:** https://cdn.jsdelivr.net/gh/signalwire/status-widget@main/data/snapshot.json
 
 ## Why this exists
 
@@ -47,9 +47,24 @@ The variant intended for a site footer. A dot, a short label, and a link to the 
 ```html
 <sw-status
   variant="footer"
-  src="https://raw.githubusercontent.com/signalwire/status-widget/main/data/snapshot.json"
-  refresh="60"></sw-status>
+  src="https://cdn.jsdelivr.net/gh/signalwire/status-widget@main/data/snapshot.json"
+  refresh="60"
+  max-age="7200"></sw-status>
 ```
+
+### Content Security Policy
+
+A site with a strict CSP must allow the hosts this loads from. Serve the stylesheet from
+`cdn.signalwire.com`, because jsDelivr is commonly absent from `style-src`:
+
+| Directive | Host |
+| --- | --- |
+| `style-src` | `https://cdn.signalwire.com` |
+| `script-src` | `https://cdn.signalwire.com` |
+| `connect-src` | `https://cdn.jsdelivr.net` |
+
+`raw.githubusercontent.com` is rarely allowlisted, which is why the snapshot is read through
+jsDelivr instead. Both serve the same file from the same commit.
 
 ### Full dashboard
 
@@ -57,7 +72,7 @@ The variant intended for a site footer. A dot, a short label, and a link to the 
 <div id="status"></div>
 <script>
   SWStatus.mount('#status', {
-    source: 'https://raw.githubusercontent.com/signalwire/status-widget/main/data/snapshot.json',
+    source: 'https://cdn.jsdelivr.net/gh/signalwire/status-widget@main/data/snapshot.json',
     refresh: 60000,
     columns: 2
   });
@@ -145,7 +160,7 @@ SWStatus.mount(el, {
   maxAge: 2 * 60 * 60 * 1000,
   source: [
     'https://cdn.signalwire.com/status/snapshot.json',
-    'https://raw.githubusercontent.com/signalwire/status-widget/main/data/snapshot.json'
+    'https://cdn.jsdelivr.net/gh/signalwire/status-widget@main/data/snapshot.json'
   ]
 });
 ```
@@ -191,7 +206,9 @@ npm run refresh          # writes data/snapshot.json
 
 The upstream API is public and needs no token, but it sends no CORS headers, so the browser
 cannot read it directly. A GitHub Action rebuilds the snapshot every five minutes and commits
-it here, and `raw.githubusercontent.com` serves it with `Access-Control-Allow-Origin: *`.
+it here. Both `cdn.jsdelivr.net` and `raw.githubusercontent.com` then serve it with
+`Access-Control-Allow-Origin: *`. jsDelivr caches a branch path for twelve hours, so the
+workflow purges it whenever the file changes.
 
 Expect roughly five minutes, and up to ten in the worst case, between a PagerDuty post and a
 changed dot. That is the cost of having nothing to operate. If you need real time, point
