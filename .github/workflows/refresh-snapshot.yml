@@ -63,7 +63,10 @@ jobs:
       # Non-fatal on purpose. The CDN is the faster of two delivery paths, not
       # the only one. If AWS is misconfigured or down, the snapshot must still
       # get committed and served from raw.githubusercontent.
+      # continue-on-error makes a failed step report conclusion=success, so the
+      # publish below gates on outcome, which is the pre-tolerance result.
       - name: Configure AWS credentials
+        id: aws
         if: vars.PUBLISH_TO_CDN == 'true'
         continue-on-error: true
         uses: aws-actions/configure-aws-credentials@v4
@@ -72,7 +75,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Publish to CDN
-        if: vars.PUBLISH_TO_CDN == 'true'
+        if: vars.PUBLISH_TO_CDN == 'true' && steps.aws.outcome == 'success'
         continue-on-error: true
         env:
           BUCKET: ${{ vars.CDN_BUCKET }}
