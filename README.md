@@ -121,11 +121,19 @@ A snapshot is a mirror, so it is only as true as the job that wrote it. Set `max
 anything older reads as unknown rather than as a confident green:
 
 ```js
-SWStatus.mount(el, { variant: 'footer', maxAge: 30 * 60 * 1000 });
+SWStatus.mount(el, { variant: 'footer', maxAge: 2 * 60 * 60 * 1000 });
 ```
 
 Every service goes unknown too, because if the snapshot is stale the per-service claims are no
 more trustworthy than the overall one.
+
+**Pick `maxAge` larger than the refresh job's heartbeat.** The bundled Action rewrites the
+snapshot every five minutes but only commits when the status actually changes, plus a heartbeat
+once an hour so a dead job is still detectable. So `generated_at` reaches an hour old on a
+perfectly healthy system, and a `maxAge` under that would report unknown when nothing is wrong.
+Two hours is the safe default against the shipped schedule. If you publish to storage on every
+run instead of committing on change, `generated_at` moves every five minutes and you can set
+`maxAge` far lower.
 
 ### Surviving a host outage
 
@@ -134,7 +142,7 @@ more trustworthy than the overall one.
 ```js
 SWStatus.mount(el, {
   variant: 'footer',
-  maxAge: 30 * 60 * 1000,
+  maxAge: 2 * 60 * 60 * 1000,
   source: [
     'https://cdn.signalwire.com/status/snapshot.json',
     'https://raw.githubusercontent.com/signalwire/status-widget/main/data/snapshot.json'
