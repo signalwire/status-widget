@@ -28,6 +28,10 @@ on:
     # repositories, so the only real cost here is the lag, not the compute.
     - cron: '*/5 * * * *'
   workflow_dispatch:
+    inputs:
+      heartbeat_minutes:
+        description: 'Commit even without a status change once the snapshot is this old. Lower it to force a heartbeat now.'
+        default: '60'
   push:
     branches: [main]
     paths:
@@ -86,6 +90,8 @@ jobs:
 
       - name: Commit if changed
         id: commit
+        env:
+          HEARTBEAT_MIN: ${{ inputs.heartbeat_minutes || '60' }}
         run: |
           if git diff --quiet -- data/snapshot.json; then
             echo "no change at all"
@@ -108,7 +114,7 @@ jobs:
 
           if [ -n "$PAYLOAD_CHANGED" ]; then
             MSG="chore: refresh status snapshot"
-          elif [ "$AGE_MIN" -ge 60 ]; then
+          elif [ "$AGE_MIN" -ge "$HEARTBEAT_MIN" ]; then
             MSG="chore: status snapshot heartbeat (${AGE_MIN}m)"
           else
             echo "no status change, last commit ${AGE_MIN}m ago, skipping"
