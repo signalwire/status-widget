@@ -73,7 +73,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Publish to CDN
-        if: vars.PUBLISH_TO_CDN == 'true' && steps.aws.outcome == 'success'
+        if: ${{ vars.PUBLISH_TO_CDN == 'true' && steps.aws.outcome == 'success' }}
         continue-on-error: true
         env:
           BUCKET: ${{ vars.CDN_BUCKET }}
