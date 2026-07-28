@@ -9,7 +9,7 @@ framework, no build step, and nothing running at request time.
 ```
 
 **Live demo:** https://signalwire.github.io/status-widget/
-**Live snapshot:** https://cdn.jsdelivr.net/gh/signalwire/status-widget@main/data/snapshot.json
+**Live snapshot:** https://cdn.signalwire.com/signalwire/status-widget/main/data/snapshot.json
 
 ## Why this exists
 
@@ -47,7 +47,7 @@ The variant intended for a site footer. A dot, a short label, and a link to the 
 ```html
 <sw-status
   variant="footer"
-  src="https://cdn.jsdelivr.net/gh/signalwire/status-widget@main/data/snapshot.json"
+  src="https://cdn.signalwire.com/signalwire/status-widget/main/data/snapshot.json"
   refresh="60"
   max-age="7200"></sw-status>
 ```
@@ -72,7 +72,7 @@ jsDelivr instead. Both serve the same file from the same commit.
 <div id="status"></div>
 <script>
   SWStatus.mount('#status', {
-    source: 'https://cdn.jsdelivr.net/gh/signalwire/status-widget@main/data/snapshot.json',
+    source: 'https://cdn.signalwire.com/signalwire/status-widget/main/data/snapshot.json',
     refresh: 60000,
     columns: 2
   });
@@ -160,7 +160,7 @@ SWStatus.mount(el, {
   maxAge: 2 * 60 * 60 * 1000,
   source: [
     'https://cdn.signalwire.com/status/snapshot.json',
-    'https://cdn.jsdelivr.net/gh/signalwire/status-widget@main/data/snapshot.json'
+    'https://cdn.signalwire.com/signalwire/status-widget/main/data/snapshot.json'
   ]
 });
 ```

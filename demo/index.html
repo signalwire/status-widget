@@ -495,7 +495,7 @@ footer.page {
 
 <span class="tok-k">&lt;sw-status</span>
   <span class="tok-p">variant</span>=<span class="tok-s">"footer"</span>
-  <span class="tok-p">src</span>=<span class="tok-s">"https://cdn.signalwire.com/status/snapshot.json"</span>
+  <span class="tok-p">src</span>=<span class="tok-s">"https://cdn.signalwire.com/signalwire/status-widget/main/data/snapshot.json"</span>
   <span class="tok-p">refresh</span>=<span class="tok-s">"60"</span><span class="tok-k">&gt;&lt;/sw-status&gt;</span></code></pre>
       </div>
       <div>
@@ -506,7 +506,7 @@ footer.page {
 
 SWStatus.<span class="tok-p">mount</span>(ref.current, {
   variant: <span class="tok-s">'footer'</span>,
-  source: <span class="tok-s">CDN + '/status/snapshot.json'</span>,
+  source: <span class="tok-s">'https://cdn.signalwire.com/signalwire/status-widget/main/data/snapshot.json'</span>,
   refresh: <span class="tok-n">60000</span>
 });</code></pre>
       </div>
@@ -600,7 +600,7 @@ SWStatus.<span class="tok-p">mount</span>(ref.current, {
   // current between deploys. It only resolves once the repo is public, so fall
   // back to the copy deploy-demo.mjs drops alongside the page.
   var CANDIDATES = [
-    'https://raw.githubusercontent.com/signalwire/status-widget/main/data/snapshot.json',
+    'https://cdn.signalwire.com/signalwire/status-widget/main/data/snapshot.json',
     './data/snapshot.json'
   ];
   var SOURCE = CANDIDATES[CANDIDATES.length - 1];
