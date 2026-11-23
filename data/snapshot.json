@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-23T14:37:38Z",
+ "generated_at": "2026-11-23T14:46:23Z",
  "source": "https://signalwire.trust.pagerduty.com/posts/dashboard",
  "page": {
   "name": "SignalWire Status",
@@ -88,7 +88,9 @@
   {
    "description": "investigating",
    "id": "P330YPP",
+   "is_downtime": true,
    "is_featured": true,
+   "is_impacting": true,
    "layout_settings": {
     "key": "incident/status/investigating"
    },
@@ -101,7 +103,9 @@
   {
    "description": "detected",
    "id": "PLM9YZW",
+   "is_downtime": true,
    "is_featured": true,
+   "is_impacting": true,
    "layout_settings": {
     "key": "incident/status/detected"
    },
@@ -114,7 +118,9 @@
   {
    "description": "resolved",
    "id": "PIPLXK6",
+   "is_downtime": false,
    "is_featured": false,
+   "is_impacting": false,
    "layout_settings": {
     "key": "incident/status/resolved"
    },
@@ -205,7 +211,9 @@
   {
    "description": "scheduled",
    "id": "P60GSMA",
+   "is_downtime": false,
    "is_featured": true,
+   "is_impacting": false,
    "layout_settings": {
     "key": "maintenance/status/scheduled"
    },
@@ -218,7 +226,9 @@
   {
    "description": "in progress",
    "id": "P2RVSNN",
+   "is_downtime": false,
    "is_featured": true,
+   "is_impacting": true,
    "layout_settings": {
     "key": "maintenance/status/in_progress"
    },
@@ -231,7 +241,9 @@
   {
    "description": "completed",
    "id": "PLNESXU",
+   "is_downtime": false,
    "is_featured": false,
+   "is_impacting": false,
    "layout_settings": {
     "key": "maintenance/status/completed"
    },
