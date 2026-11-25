@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-25T10:38:28Z",
+ "generated_at": "2026-11-25T11:29:42Z",
  "source": "https://signalwire.trust.pagerduty.com/posts/dashboard",
  "page": {
   "name": "SignalWire Status",
@@ -303,6 +303,21 @@
    "post_enum_type": "impacts",
    "post_type": "maintenance",
    "rank": 1,
+   "status_page_id": "P37FJDY"
+  },
+  {
+   "description": "monitoring",
+   "id": "P7Y50IE",
+   "is_downtime": false,
+   "is_featured": true,
+   "is_impacting": false,
+   "layout_settings": {
+    "key": "incident/status/monitoring"
+   },
+   "name": "monitoring",
+   "post_enum_type": "status",
+   "post_type": "incident",
+   "rank": 2,
    "status_page_id": "P37FJDY"
   }
  ],
